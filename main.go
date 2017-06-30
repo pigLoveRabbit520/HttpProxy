@@ -17,6 +17,7 @@ func PrintAuthorInfo() {
  |_____/ \__,_|_|\__,_|_| |_| |_|\__,_|_| |_|\__,_|\___|_|   
 ` + "\n"
 	fmt.Print(logo)
+	fmt.Println("Project Address: https://github.com/salamander-mh/SalamanderHttpProxy")
 }
 
 func main() {
@@ -26,10 +27,25 @@ func main() {
 		log.Panic(err)
 	}
 	for {
-		_, err := listener.Accept()
+		client, err := listener.Accept()
 		if err != nil {
 			log.Panic(err)
 		}
-
+		go handleClientRequest(client)
 	}
+}
+
+func handleClientRequest(client net.Conn) {
+	if client == nil {
+		return
+	}
+	defer client.Close()
+
+	var buf [1024]byte
+	n, err := client.Read(buf[:])
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	fmt.Println("recv msg:", string(buf[0:n]))
 }
