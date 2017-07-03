@@ -5,6 +5,10 @@ import (
 	"net"
 //	"strings"
 	"fmt"
+	"strings"
+	"io"
+	"bytes"
+	"net/url"
 )
 
 const (
@@ -33,16 +37,49 @@ func HandleClientRequest(client net.Conn) {
 	request := Request{}
 	request.Headers = make(map[string]string)
 
-	for {
-		var buf [BufferSize]byte
-		readBytesNum, err := client.Read(buf[:])
-		if err != nil {
-			log.Println("读取字节失败:" + err.Error())
-			return
+	var buf [BufferSize]byte
+	readBytesNum, err := client.Read(buf[:])
+	if err != nil {
+		log.Println("读取字节失败:" + err.Error())
+		return
+	}
+	str := string(buf[0:readBytesNum])
+	fmt.Println("recevie msg: " + str)
+	var method, host, address string
+	fmt.Sscanf(string(buf[:bytes.IndexByte(buf[:], '\n')]), "%s%s", &method, &host)
+	hostPortURL, err := url.Parse(host)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	if hostPortURL.Opaque == "443" { // https访问
+		address = hostPortURL.Scheme + ":443"
+	} else { //http访问
+		if strings.Index(hostPortURL.Host, ":") == -1 { // host不带端口， 默认80
+			address = hostPortURL.Host + ":80"
+		} else {
+			address = hostPortURL.Host
 		}
-		str := string(buf[0:readBytesNum])
-		fmt.Println(str)
-		break
+	}
+
+	//获得了请求的host和port，就开始拨号吧
+	server, err := net.Dial("tcp", address)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if method == "CONNECT" {
+		fmt.Fprint(client, "HTTP/1.1 200 Connection established\r\n")
+	} else {
+		server.Write(buf[:readBytesNum])
+	}
+	//进行转发
+	go io.Copy(server, client)
+	io.Copy(client, server)
+
+
+
 		//allBytesNum += readBytesNum
 		//allBytes = append(allBytes, buf[:]...)
 		//tmpStr := string(allBytes)
@@ -59,7 +96,6 @@ func HandleClientRequest(client net.Conn) {
 		//	}
 		//	break
 		//}
-	}
 
 	//fmt.Println(request)
 
