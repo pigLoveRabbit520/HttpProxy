@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	salamanderHttp "github.com/SalamanderHttpProxy/http"
 )
 
 // 打印作者信息
@@ -31,21 +32,6 @@ func main() {
 		if err != nil {
 			log.Panic(err)
 		}
-		go handleClientRequest(client)
+		go salamanderHttp.HandleClientRequest(client)
 	}
-}
-
-func handleClientRequest(client net.Conn) {
-	if client == nil {
-		return
-	}
-	defer client.Close()
-
-	var buf [1024]byte
-	n, err := client.Read(buf[:])
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	fmt.Println("recv msg:", string(buf[0:n]))
 }
