@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-	salamanderHttp "github.com/SalamanderHttpProxy/http"
+	salamanderHttp "github.com/salamander-mh/SalamanderHttpProxy/http"
 )
 
 // 打印作者信息
@@ -23,10 +23,12 @@ func PrintAuthorInfo() {
 
 func main() {
 	PrintAuthorInfo()
-	listener, err := net.Listen("tcp", ":8080")
+	var port = 8080
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Panic(err)
 	}
+	fmt.Printf(fmt.Sprintf("start listening on port %d", port))
 	for {
 		client, err := listener.Accept()
 		if err != nil {
