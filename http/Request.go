@@ -47,7 +47,6 @@ func HandleClientRequest(client net.Conn) {
 		}
 	}
 	headersStr := bufferStr[:headerEndPos+1]
-	fmt.Println("recevie header: " + headersStr)
 	lines := strings.Split(headersStr, CRLF)
 	lineCount := len(lines)
 	for i := 0; i < lineCount; i++ {
@@ -60,10 +59,11 @@ func HandleClientRequest(client net.Conn) {
 			request.Protocol = strs[2]
 		} else {
 			twoParts := strings.Split(line, ":")
-			headerName := strings.TrimSpace(twoParts[0])
+			headerName := strings.ToLower(strings.TrimSpace(twoParts[0]))
 			headerValue := strings.TrimSpace(twoParts[1])
 			request.Headers[headerName] = headerValue
 		}
 	}
-	fmt.Printf("your request is %+v\n", request)
+	request.Host = request.Headers["host"]
+	fmt.Printf("your request is %+v\n\n\n\n\n", request)
 }

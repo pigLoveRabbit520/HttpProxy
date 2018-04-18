@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	salamanderHttp "github.com/salamander-mh/SalamanderHttpProxy/http"
 	"log"
 	"net"
-	salamanderHttp "github.com/salamander-mh/SalamanderHttpProxy/http"
 )
 
 // 打印作者信息
@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	fmt.Printf(fmt.Sprintf("start listening on port %d", port))
+	fmt.Printf(fmt.Sprintf("start listening on port %d\n", port))
 	for {
 		client, err := listener.Accept()
 		if err != nil {
